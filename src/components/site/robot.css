@@ -112,10 +112,14 @@
 }
 
 .zb .footer-bot {
-  position: absolute;
-  right: var(--gut);
-  top: 110px;
+  margin: 24px 0 0 auto;
   width: clamp(96px, 8vw, 128px);
+}
+.zb .footer-mid {
+  display: flex;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-bottom: 40px;
 }
 
 /* ---------- Solid shapes ---------- */

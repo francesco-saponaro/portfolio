@@ -594,6 +594,9 @@ body:has(.zb) {
 .zb .step .step-role {
   max-width: none;
 }
+.zb .card-empty {
+  flex-basis: min(100%, 560px);
+}
 .zb .card-stack {
   display: flex;
   flex-wrap: wrap;
@@ -635,9 +638,8 @@ body:has(.zb) {
 .zb .mail {
   display: inline-block;
   margin-top: 36px;
-  font: 600 clamp(24px, 3.6vw, 60px) / 1.05 var(--display);
+  font: 600 clamp(19px, 2.7vw, 44px) / 1.05 var(--display);
   letter-spacing: -0.05em;
-  overflow-wrap: anywhere;
   text-decoration: none;
   background: linear-gradient(92deg, var(--mint), var(--sky));
   -webkit-background-clip: text;
@@ -807,7 +809,13 @@ body:has(.zb) {
     gap: 12px;
   }
   .zb .wordmark {
-    font-size: 17px;
+    font-size: 16px;
+  }
+  .zb .wordmark span {
+    white-space: nowrap;
+  }
+  .zb .nav .btn {
+    padding: 0 14px;
   }
   .zb .wordmark small {
     display: none;

@@ -17,7 +17,7 @@ export function Projects({ projects = PROJECTS }: { projects?: Project[] }) {
       </div>
       <DragStrip label="Projects">
         {projects.length === 0 ? (
-          <article className="card t-sky" data-testid="projects-empty">
+          <article className="card card-empty t-sky" data-testid="projects-empty">
             <span className="card-n">00</span>
             <h3>More soon.</h3>
             <p>

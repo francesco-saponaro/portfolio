@@ -70,7 +70,9 @@ function Footer() {
           Back to top
         </a>
       </div>
-      <BotDock className="footer-bot" point="left" />
+      <div className="footer-mid">
+        <BotDock className="footer-bot" point="left" />
+      </div>
       <div className="footer-meta">
         <nav aria-label="Elsewhere">
           <a href={PERSON.github} rel="noreferrer" target="_blank">

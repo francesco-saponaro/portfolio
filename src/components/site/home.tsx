@@ -124,7 +124,8 @@ export function Home() {
               Email is the quickest way to reach me. For the rest, LinkedIn and GitHub.
             </p>
             <a className="mail" href={`mailto:${PERSON.email}`} data-in>
-              {PERSON.email}
+              {PERSON.email.split("@")[0]}
+              <wbr />@{PERSON.email.split("@")[1]}
             </a>
             <div className="others" data-in>
               <ul>
