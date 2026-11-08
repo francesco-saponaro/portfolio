@@ -1,0 +1,11 @@
+{
+  "slug": "portfolio",
+  "name": "Francesco Saponaro",
+  "company": "",
+  "flagship": true,
+  "description": "Personal site of Francesco Saponaro, full-stack developer: work, projects and contact.",
+  "install": "npm ci --no-audit --no-fund",
+  "test": "npm test -- --run",
+  "build": "npm run build",
+  "dist": "out"
+}
