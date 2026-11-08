@@ -1,0 +1,201 @@
+/* The flying robot, its docks, the solid shapes and the nav mark. Loaded
+   after site.css. */
+
+/* ---------- The flying robot ---------- */
+.zb > .flyer.flyer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 400px;
+  height: 460px;
+  z-index: 4;
+  transform-origin: 0 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s var(--ease);
+  filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 30px rgba(47, 224, 196, 0.2));
+}
+.zb > .flyer.ready {
+  opacity: 1;
+}
+.zb .flyer svg,
+.zb .bot-dock svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.zb .flyer.hit [data-part="hit"] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.zb .rb-dot {
+  animation: zb-type 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.zb .rb-dot:nth-of-type(2) {
+  animation-delay: 0.18s;
+}
+.zb .rb-dot:nth-of-type(3) {
+  animation-delay: 0.36s;
+}
+
+/* Docks: empty places the robot hovers over. */
+.zb .bot-dock {
+  aspect-ratio: 200 / 230;
+  position: relative;
+}
+.zb .bot-dock svg {
+  filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.42));
+}
+.zb-robot .zb .bot-dock svg {
+  visibility: hidden;
+}
+.zb .hero-bot {
+  width: min(100%, 400px);
+  justify-self: center;
+}
+.zb .side-bot {
+  width: clamp(110px, 10vw, 156px);
+}
+.zb .rb .manifesto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--gap);
+}
+.zb .features-bot {
+  width: clamp(90px, 7vw, 120px);
+  margin-left: 8px;
+}
+.zb .rb .features-head p {
+  margin-left: auto;
+}
+.zb .stage-bot {
+  position: absolute;
+  right: 0;
+  top: calc(50% - 330px);
+  width: clamp(100px, 9vw, 140px);
+}
+.zb .rb .training-stage {
+  position: sticky;
+}
+.zb .about-art {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 320px);
+}
+.zb .rb .about-shape {
+  width: 100%;
+}
+.zb .about-bot {
+  position: absolute;
+  width: 44%;
+  right: -26%;
+  top: -30%;
+}
+.zb .cta-art {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 360px);
+}
+.zb .rb .cta-shape {
+  width: 100%;
+}
+.zb .cta-bot {
+  position: absolute;
+  width: 42%;
+  left: 18%;
+  top: -36%;
+}
+
+.zb .footer-bot {
+  position: absolute;
+  right: var(--gut);
+  top: 110px;
+  width: clamp(96px, 8vw, 128px);
+}
+
+/* ---------- Solid shapes ---------- */
+.zb .solid {
+  aspect-ratio: 1;
+  position: relative;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.8s var(--ease-out);
+  filter: drop-shadow(0 0 46px rgba(47, 224, 196, 0.26)) drop-shadow(0 28px 34px rgba(0, 0, 0, 0.38));
+}
+.zb .solid svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: sl-breathe 6s ease-in-out infinite;
+}
+.zb .solid .sl {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+@keyframes sl-breathe {
+  50% {
+    transform: translateY(-1.6%) scale(1.018);
+  }
+}
+
+/* ---------- Nav logo: the robot's head ---------- */
+.zb .rmark .eye {
+  animation: rb-blink 4.6s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes rb-blink {
+  0%,
+  93%,
+  100% {
+    transform: none;
+  }
+  96% {
+    transform: scaleY(0.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zb .solid svg,
+  .zb .rb-dot,
+  .zb .rmark .eye {
+    animation: none;
+  }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 760px) {
+  .zb .hero-bot {
+    order: -1;
+    width: min(50vw, 210px);
+  }
+      .zb .rb .manifesto {
+    grid-template-columns: 1fr;
+  }
+  .zb .side-bot {
+    display: none;
+  }
+    .zb .rb .stories-stage,
+  .zb .rb .training-stage {
+    position: relative;
+  }
+  .zb .stage-bot {
+    top: 0;
+    right: 0;
+    width: 84px;
+  }
+  .zb .about-art {
+    width: 180px;
+    justify-self: start;
+  }
+  .zb .cta-art {
+    display: none;
+  }
+    .zb .footer-bot {
+    display: none;
+  }
+}
