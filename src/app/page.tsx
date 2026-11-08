@@ -1,9 +1,5 @@
-import { unbounded, instrument } from "@/components/site/fonts";
+import { Home } from "@/components/site/home";
 
-export default function Home() {
-  return (
-    <main className={`${unbounded.variable} ${instrument.variable}`}>
-      <h1>Francesco Saponaro</h1>
-    </main>
-  );
+export default function Page() {
+  return <Home />;
 }
