@@ -4,6 +4,7 @@ import { LitText, StoryWatcher } from "./client";
 import { SolidShape } from "./solid";
 import { BotDock } from "./robot";
 import { Projects } from "./projects";
+import { Retest } from "./retest";
 import { FACTS, HERO, HOW, MANIFESTO, PERSON, WORK } from "@/data/site";
 
 // The one page: hero, manifesto, projects, work, how I work, languages and
@@ -26,7 +27,7 @@ export function Home() {
             </h1>
             <p className="hero-lead after-rise">{HERO.lead}</p>
             <div className="actions after-rise">
-              <Link href="#work" className="btn">
+              <Link href="#retest" className="btn">
                 See the work <span aria-hidden="true">↓</span>
               </Link>
               <Link href="#contact" className="btn ghost">
@@ -41,6 +42,8 @@ export function Home() {
           <LitText text={MANIFESTO} />
           <BotDock className="side-bot manifesto-bot" point="left" />
         </section>
+
+        <Retest />
 
         <Projects />
 
@@ -86,7 +89,6 @@ export function Home() {
           <div className="wrap how-grid">
             {HOW.map((h, i) => (
               <article key={h.title} className={`card t-${h.tone}`} data-in style={{ ["--i" as string]: i }}>
-                <span className="card-n">{String(i + 1).padStart(2, "0")}</span>
                 <h3>{h.title}</h3>
                 <p>{h.text}</p>
               </article>

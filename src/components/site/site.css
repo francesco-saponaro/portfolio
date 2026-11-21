@@ -761,6 +761,241 @@ body:has(.zb) {
   transform: none;
 }
 
+/* ---------- Retest, the flagship ---------- */
+.zb .retest {
+  padding-top: var(--section);
+}
+.zb .retest-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: clamp(28px, 4vw, 72px);
+  align-items: start;
+}
+.zb .retest h2 {
+  font-size: var(--t-xl);
+}
+.zb .retest-lead {
+  margin-top: 24px;
+  max-width: 24em;
+  color: var(--ink);
+  font-size: clamp(20px, 1.6vw, 25px);
+  line-height: 1.4;
+}
+.zb .retest-body {
+  margin-top: 18px;
+  max-width: 34em;
+  color: var(--ink);
+  font-size: clamp(17px, 1.15vw, 19px);
+}
+.zb .retest .actions {
+  margin-top: 32px;
+}
+.zb .screens-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.zb .screens-tab {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(160, 230, 215, 0.08);
+  color: var(--ink);
+  font: 500 16px/1 var(--body);
+  cursor: pointer;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease),
+    transform 0.25s var(--ease);
+}
+.zb .screens-tab:hover {
+  background: rgba(160, 230, 215, 0.16);
+}
+.zb .screens-tab:active {
+  transform: scale(0.97);
+}
+.zb .screens-tab[aria-selected="true"] {
+  background: var(--mint);
+  color: var(--on-mint);
+}
+.zb .screens-shot {
+  margin: 0;
+}
+.zb .screens-shot[hidden] {
+  display: none;
+}
+.zb .screens-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  background: var(--bg-2);
+}
+.zb .screens-shot.on img {
+  animation: shot-in 0.45s var(--ease-out) both;
+}
+.zb .screens-shot figcaption {
+  margin-top: 14px;
+  max-width: 52em;
+  color: var(--muted);
+  font-size: 16px;
+}
+@keyframes shot-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zb .retest-run {
+  padding-top: clamp(72px, 9vw, 140px);
+}
+.zb .retest-run-head {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) auto;
+  gap: var(--gap);
+  align-items: end;
+}
+.zb .retest h3 {
+  font-size: var(--t-m);
+  line-height: 1.2;
+}
+.zb .retest-run-head p {
+  max-width: 34em;
+  color: var(--ink);
+  font-size: clamp(17px, 1.15vw, 19px);
+}
+.zb .retest-bot {
+  width: clamp(90px, 7vw, 120px);
+}
+.zb .figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  margin: 48px 0 0;
+}
+.zb .figure {
+  margin: 0;
+}
+.zb .figure dt {
+  font: 700 var(--t-l) / 1 var(--display);
+  letter-spacing: -0.03em;
+  color: var(--mint);
+  white-space: nowrap;
+}
+.zb .figure dd {
+  margin: 16px 0 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.45;
+}
+.zb .retest-how {
+  padding-top: clamp(72px, 9vw, 140px);
+}
+.zb .pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  margin: 36px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.zb .pipeline li {
+  position: relative;
+  padding-top: 22px;
+}
+.zb .pipeline li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--mint);
+}
+.zb .pipeline li:nth-child(2)::before {
+  width: 88px;
+  background: var(--sky);
+}
+.zb .pipeline li:nth-child(3)::before {
+  width: 132px;
+  background: var(--butter);
+}
+.zb .pipeline li:nth-child(4)::before {
+  width: 176px;
+  background: var(--tangerine);
+}
+.zb .pipeline b {
+  display: block;
+  font: 600 clamp(22px, 1.7vw, 28px) / 1.1 var(--display);
+}
+.zb .pipeline p {
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: 17px;
+}
+.zb .retest-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.zb .retest-stack li {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(160, 230, 215, 0.08);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+/* ---------- Project cards with a screenshot ---------- */
+.zb .card.project {
+  flex-basis: clamp(300px, 31vw, 470px);
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+.zb .project-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+  background: var(--bg-2);
+  pointer-events: none;
+  transition: transform 0.6s var(--ease-out);
+}
+.zb .card.project:hover .project-shot {
+  transform: scale(1.03);
+}
+.zb .project-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 26px 28px;
+}
+.zb .card.project h3 {
+  margin-top: 0;
+}
+.zb .card.project p {
+  color: var(--ink);
+  font-size: 17px;
+}
+.zb .card.project .card-links {
+  margin-top: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .zb .reveal-line > span,
   .zb .after-rise {
@@ -778,6 +1013,12 @@ body:has(.zb) {
   }
   .zb .btn:hover,
   .zb .card:hover {
+    transform: none;
+  }
+  .zb .screens-shot.on img {
+    animation: none;
+  }
+  .zb .card.project:hover .project-shot {
     transform: none;
   }
 }
@@ -798,6 +1039,16 @@ body:has(.zb) {
     justify-self: start;
   }
   .zb .how-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .zb .retest-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .zb .retest-run-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .zb .figures,
+  .zb .pipeline {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -875,6 +1126,33 @@ body:has(.zb) {
   }
   .zb .how-grid {
     grid-template-columns: 1fr;
+  }
+  .zb .screens-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-inline: calc(var(--gut) * -1);
+    padding-inline: var(--gut);
+    scrollbar-width: none;
+  }
+  .zb .screens-tab {
+    flex: 0 0 auto;
+  }
+  .zb .figures {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 16px;
+  }
+  .zb .figure dt {
+    font-size: 30px;
+    white-space: normal;
+  }
+  .zb .figure dd {
+    font-size: 16px;
+  }
+  .zb .pipeline {
+    grid-template-columns: 1fr;
+  }
+  .zb .card.project {
+    flex-basis: 84vw;
   }
   .zb .how-grid .card {
     min-height: 0;

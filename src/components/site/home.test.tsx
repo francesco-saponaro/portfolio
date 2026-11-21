@@ -30,7 +30,7 @@ describe("the page", () => {
   it("gives the robot a dock in every section", () => {
     const { container } = render(<Home />);
     const sections = Array.from(container.querySelectorAll("main > section"));
-    expect(sections.length).toBe(7);
+    expect(sections.length).toBe(8);
     for (const s of sections) expect(s.querySelector("[data-bot]"), `${s.id || s.className} needs a dock`).not.toBeNull();
   });
 });

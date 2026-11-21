@@ -30,10 +30,13 @@ Open `src/data/projects.ts` and push an object into `PROJECTS`:
   repo: "https://github.com/francesco-saponaro/stix-lens",
   live: "https://stix-lens.netlify.app",
   year: 2026,
+  image: { src: "/work/stix-lens.webp", alt: "What the screenshot shows" },
 }
 ```
 
-The Projects section picks it up on the next build: one card per entry, in the order of the array. While the array is empty the section shows a short note and a link to my GitHub instead.
+The screenshot goes in `public/work/`, 960 by 600 pixels, WebP. Retest has its own section: its words, numbers and screens are in `src/data/retest.ts`.
+
+The projects strip picks it up on the next build: one card per entry, in the order of the array, with its screenshot on top.
 
 ## Where things are
 

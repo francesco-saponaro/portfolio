@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Small client islands of the page: the entrances, the scroll-lit text, the
 // pinned steps and the drag strip. Each renders its full content on the
@@ -164,6 +164,73 @@ export function DragStrip({ children, label }: { children: React.ReactNode; labe
   return (
     <div ref={ref} className="strip" role="region" aria-label={label} tabIndex={0}>
       {children}
+    </div>
+  );
+}
+
+// Retest's screens: one large picture and a row of tabs. All the pictures are
+// in the page from the start (the first one shown, the rest hidden), so the
+// section reads and the first screen shows even without script; the tabs
+// only choose which one is visible.
+export function ScreenSwitcher({
+  screens,
+}: {
+  screens: ReadonlyArray<{ id: string; label: string; caption: string; src: string; alt: string }>;
+}) {
+  const [on, setOn] = useState(0);
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
+  const choose = (i: number, focus = false) => {
+    const n = (i + screens.length) % screens.length;
+    setOn(n);
+    if (focus) tabs.current[n]?.focus();
+  };
+  return (
+    <div className="screens">
+      <div className="screens-tabs" role="tablist" aria-label="Retest's screens">
+        {screens.map((s, i) => (
+          <button
+            key={s.id}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`tab-${s.id}`}
+            aria-selected={i === on}
+            aria-controls={`screen-${s.id}`}
+            tabIndex={i === on ? 0 : -1}
+            className="screens-tab"
+            onClick={() => choose(i)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                choose(i + 1, true);
+              } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                choose(i - 1, true);
+              }
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="screens-frame">
+        {screens.map((s, i) => (
+          <figure
+            key={s.id}
+            id={`screen-${s.id}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${s.id}`}
+            className={`screens-shot${i === on ? " on" : ""}`}
+            hidden={i !== on}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={s.src} alt={s.alt} width={1600} height={1000} loading={i === 0 ? "eager" : "lazy"} decoding="async" />
+            <figcaption>{s.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
     </div>
   );
 }

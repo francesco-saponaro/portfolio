@@ -25,6 +25,7 @@ export function SiteFrame({ children }: { children: React.ReactNode }) {
 }
 
 export const NAV_LINKS = [
+  { href: "#retest", label: "Retest" },
   { href: "#projects", label: "Projects" },
   { href: "#work", label: "Work" },
   { href: "#how", label: "How I work" },

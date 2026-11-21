@@ -13,7 +13,7 @@ describe("the projects section", () => {
 
   it("renders one card per project, with its stack and links", () => {
     const projects: Project[] = [
-      { slug: "a", name: "Alpha", summary: "First one.", stack: ["Next.js", "SQL"], repo: "https://github.com/francesco-saponaro/alpha", live: "https://alpha.example", year: 2026 },
+      { slug: "a", name: "Alpha", summary: "First one.", stack: ["Next.js", "SQL"], repo: "https://github.com/francesco-saponaro/alpha", live: "https://alpha.example", year: 2026, image: { src: "/work/alpha.webp", alt: "Alpha's main screen" } },
       { slug: "b", name: "Beta", summary: "Second one.", stack: ["Expo"], year: 2025 },
     ];
     render(<Projects projects={projects} />);
@@ -22,7 +22,8 @@ describe("the projects section", () => {
     expect(screen.getByRole("heading", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByText("SQL")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Code/ })).toHaveAttribute("href", projects[0].repo);
-    expect(screen.getByRole("link", { name: /Live/ })).toHaveAttribute("href", projects[0].live);
-    expect(screen.getByText("02 · 2025")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open it/ })).toHaveAttribute("href", projects[0].live);
+    expect(screen.getByRole("img", { name: "Alpha's main screen" })).toHaveAttribute("src", "/work/alpha.webp");
+    expect(screen.getAllByRole("img")).toHaveLength(1);
   });
 });
