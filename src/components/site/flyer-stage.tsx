@@ -17,9 +17,15 @@ import { ARROW, BLOCK, digits, ENVELOPE, EYES, FACE, HAPPY_EYES, type Cell } fro
 //   projects                four small blocks circling
 //   contact                 an envelope
 //
+// On the first visit the dust gathers from all over the screen into the face.
 // The face glows and gives off dust, more when the pointer moves; the pointer
-// stirs the dust like wind, fast dots streak, close ones are large and soft,
-// and a small dot trails the pointer. The companion is drawn with a
+// stirs the dust like wind, fast dots streak, close ones are large and soft.
+// A click sends a ring through the dust, and a click on the face makes it
+// burst and gather again, pleased. Scrolling drags the dust along, and on a
+// long jump the companion falls apart and forms again out of the dust at its
+// next place. On a phone the dust leans with the phone. A small dot trails a
+// mouse pointer: a ring over things to click, a point over text. The
+// companion is drawn with a
 // "difference" blend, so it stays white on the dark page
 // and turns dark over a light picture. With reduced motion it does not travel
 // between shapes, it is simply there.
@@ -118,17 +124,45 @@ export function FlyerStage() {
     window.addEventListener("resize", resize);
 
     const pointer = { x: -9999, y: -9999, sx: 0.5, sy: 0.5, active: false };
+    /** Whether the pointer is a mouse (the trailing dot is only for a mouse). */
+    let mouse = false;
+    /** What is under the mouse: something to click, text, or neither. */
+    let hover: "link" | "text" | "none" = "none";
     const onMove = (e: PointerEvent) => {
       pointer.x = e.clientX;
       pointer.y = e.clientY;
       pointer.active = true;
+      mouse = e.pointerType === "mouse";
     };
     const onLeave = () => {
       pointer.active = false;
       pointer.x = pointer.y = -9999;
     };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") onLeave();
+    };
+    const onOver = (e: PointerEvent) => {
+      const el = e.target instanceof Element ? e.target : null;
+      hover = el?.closest("a, button, [role=tab], summary, label, input")
+        ? "link"
+        : el?.closest("p, h1, h2, h3, li, dd, dt, figcaption, blockquote")
+          ? "text"
+          : "none";
+    };
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("pointercancel", onUp, { passive: true });
+    document.addEventListener("pointerover", onOver, { passive: true });
     document.addEventListener("pointerleave", onLeave);
+
+    // A phone's tilt leans the dust (where the browser gives it without asking).
+    const tilt = { x: 0, y: 0 };
+    const onTilt = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null) return;
+      tilt.x = clamp(e.gamma / 30, -1, 1);
+      tilt.y = clamp((e.beta - 45) / 30, -1, 1);
+    };
+    if (small) window.addEventListener("deviceorientation", onTilt, { passive: true });
 
     // One set of dots for the whole page. Free dots are the dust drifting
     // behind the content; the companion recruits the nearest free dots for
@@ -147,18 +181,20 @@ export function FlyerStage() {
         d,
         near,
         r0: near ? 3 + Math.random() * 4 : 0.6 + d * 1.4,
-        r: 1,
-        a: 0.5,
+        r: 0,
+        a: 0,
         c: DUST[(Math.random() * DUST.length) | 0]!,
         tw: Math.random() * Math.PI * 2,
         k: 0.1 + Math.random() * 0.05,
         body: false,
+        /** Left out on a slow machine. */
+        off: false,
       };
     });
     /** The companion's dots, in the order of the shape's cells. */
     const members: number[] = [];
     const figure = digits(document.querySelector(".zb .figures dt")?.textContent?.trim() || "399");
-    const STIR = small ? 0 : 230;
+    const STIR = small ? 150 : 230;
     const cursor = { x: -9999, y: -9999, px: -9999, py: -9999, vx: 0, vy: 0 };
     let emit = 0;
 
@@ -170,6 +206,52 @@ export function FlyerStage() {
     let blinkAt = performance.now() + 1800;
     let t0 = performance.now();
     document.documentElement.classList.add("zb-robot");
+
+    // The opening: for a moment there is only dust, then it gathers from all
+    // over the screen into the face, slowly, and the face blinks and breathes
+    // out a puff of dust. Skipped when the page opens further down.
+    const opening = !reduced && window.scrollY < H * 0.5;
+    const introUntil = opening ? t0 + 900 : 0;
+    let gatherWide = opening;
+    let slowUntil = 0;
+    let burstAt = 0;
+    /** While set, the companion stays apart: it has just burst or jumped. */
+    let scatterUntil = 0;
+    /** Rings sent through the dust by clicks. */
+    const waves: { x: number; y: number; t: number }[] = [];
+    let scrollY = window.scrollY;
+    let scrollV = 0;
+    let ring = 4;
+    let lite = false;
+    let timed = 0;
+    let timeSum = 0;
+
+    /** Lets the companion's dots go, flying outwards from its middle. */
+    const scatter = (power: number, drift = 0) => {
+      for (const i of members) {
+        const d = parts[i]!;
+        d.body = false;
+        const a = Math.atan2(d.y - p.y, d.x - p.x) + (Math.random() - 0.5) * 0.7;
+        const sp = power * (0.4 + Math.random());
+        d.vx += Math.cos(a) * sp;
+        d.vy += Math.sin(a) * sp + drift;
+        d.a = 1;
+      }
+      members.length = 0;
+    };
+    const faceRadius = () => clamp(p.s * 0.085, 7, small ? 14 : 30) * 5.6;
+    const onDown = (e: PointerEvent) => {
+      if (reduced) return;
+      const now = performance.now();
+      waves.push({ x: e.clientX, y: e.clientY, t: now });
+      if (waves.length > 4) waves.shift();
+      if (target.mode === "face" && members.length && Math.hypot(e.clientX - p.x, e.clientY - p.y) < faceRadius()) {
+        scatter(small ? 5 : 8);
+        scatterUntil = now + 650;
+        happyUntil = now + 650 + 1700;
+      }
+    };
+    window.addEventListener("pointerdown", onDown, { passive: true });
 
     // A shape's cells on the screen at a pitch, in reading order.
     const place = (cells: Cell[], cx: number, cy: number, pitch: number, a: number, r: number, mirror = 1): Goal[] =>
@@ -194,9 +276,29 @@ export function FlyerStage() {
 
     const frame = (now: number) => {
       if (!alive) return;
-      const dt = Math.min(2.2, (now - t0) / 16.67);
+      const spent = now - t0;
+      const dt = clamp(spent / 16.67, 0, 2.2);
       t0 = now;
       const time = now / 1000;
+
+      // A slow machine: after the opening, measure two seconds of frames and,
+      // if they run long, draw half the dust.
+      if (!lite && now > introUntil + 2000 && timed < 120) {
+        timed++;
+        timeSum += spent;
+        if (timed === 120 && timeSum / timed > 24) {
+          lite = true;
+          parts.forEach((d, i) => {
+            if (i % 2) d.off = true;
+          });
+        }
+      }
+
+      // Scrolling drags the dust along, the near dust more.
+      const sy = window.scrollY;
+      const ds = sy - scrollY;
+      scrollY = sy;
+      scrollV += (ds - scrollV) * 0.35;
 
       if (pointer.active) {
         pointer.sx += (pointer.x / W - pointer.sx) * 0.05 * dt;
@@ -205,6 +307,20 @@ export function FlyerStage() {
 
       // Where to be, and what.
       const found = findTarget(W, H, small, dock);
+      // A long jump: fall apart here and form again there, out of the dust.
+      if (
+        !reduced &&
+        members.length &&
+        (found.dock !== dock || found.t.mode !== target.mode) &&
+        Math.hypot(found.t.x - p.x, found.t.y - p.y) > H * 0.35
+      ) {
+        scatter(2.2, -clamp(scrollV, -30, 30) * 0.15);
+        p.x = found.t.x;
+        p.y = found.t.y;
+        p.vx = p.vy = 0;
+        if (found.t.s) p.s = found.t.s;
+        scatterUntil = Math.max(scatterUntil, now + 240);
+      }
       dock = found.dock;
       target = found.t;
       if (reduced) {
@@ -257,11 +373,30 @@ export function FlyerStage() {
         goals = face(cx, cy, target.mode === "corner" ? 6 : clamp(p.s * 0.085, 7, small ? 14 : 30), now);
       }
 
-      // Recruit the nearest free dots, or release the extra ones.
+      if (now < introUntil || now < scatterUntil) goals = [];
+
+      // Recruit the nearest free dots, or release the extra ones. The first
+      // time, they come from anywhere on the screen.
       while (members.length > goals.length) {
         const i = members.pop()!;
         const d = parts[i]!;
         d.body = false;
+      }
+      if (members.length < goals.length && gatherWide) {
+        gatherWide = false;
+        const free = parts.map((d, i) => i).filter((i) => !parts[i]!.body && !parts[i]!.near);
+        for (let k = free.length - 1; k > 0; k--) {
+          const j = (Math.random() * (k + 1)) | 0;
+          [free[k], free[j]] = [free[j]!, free[k]!];
+        }
+        for (const i of free) {
+          if (members.length >= goals.length) break;
+          parts[i]!.body = true;
+          members.push(i);
+        }
+        slowUntil = now + 1500;
+        burstAt = now + 1450;
+        blinkAt = now + 1700;
       }
       if (members.length < goals.length) {
         const free = parts
@@ -316,11 +451,15 @@ export function FlyerStage() {
         // leaves from inside the face, outwards, and joins the drift.
         if (!reduced) {
           emit += dt * (0.18 + Math.min(2.5, stirSpeed * 0.06));
+          if (burstAt && now > burstAt) {
+            emit += 26;
+            burstAt = 0;
+          }
           const size = R / 9 * 5;
           while (emit >= 1) {
             emit -= 1;
             const free = parts[(Math.random() * COUNT) | 0]!;
-            if (free.body || free.near) continue;
+            if (free.body || free.near || free.off) continue;
             const ang = Math.random() * Math.PI * 2;
             const at = Math.random() * size;
             free.x = cx + Math.cos(ang) * at;
@@ -333,14 +472,46 @@ export function FlyerStage() {
         }
       }
 
+      // The click rings: drawn faintly, each pushing the dust it passes.
+      for (let w = waves.length - 1; w >= 0; w--) {
+        if (now - waves[w]!.t > 1100) waves.splice(w, 1);
+      }
+      for (const w of waves) {
+        const age = Math.max(0, now - w.t) / 1100;
+        ctx.globalAlpha = 0.16 * (1 - age);
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, age * 1000, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      const push = (d: { x: number; y: number; vx: number; vy: number }, f: number) => {
+        for (const w of waves) {
+          const age = Math.max(0, now - w.t) / 1100;
+          const dx = d.x - w.x;
+          const dy = d.y - w.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const off = Math.abs(dist - age * 1000);
+          if (off < 70) {
+            const k = (1 - off / 70) * (1 - age) * f * dt;
+            d.vx += (dx / dist) * k;
+            d.vy += (dy / dist) * k;
+          }
+        }
+      };
+
       // The dust: a slow upward drift with some sway; the pointer stirs it
       // like wind, along its path and in a swirl around it. Fast dots draw as
       // short streaks, close ones as large soft discs.
       for (const d of parts) {
-        if (d.body) continue;
+        if (d.body || d.off) continue;
         if (!reduced) {
-          const tvx = Math.sin(time * 0.3 + d.tw) * 0.12 * d.d;
-          const tvy = -0.22 * d.d;
+          const tvx = Math.sin(time * 0.3 + d.tw) * 0.12 * d.d + tilt.x * 0.9 * d.d;
+          const tvy = -0.22 * d.d + tilt.y * 0.9 * d.d;
+          d.y -= ds * 0.18 * d.d;
+          d.vy -= clamp(scrollV, -60, 60) * 0.006 * d.d * dt;
+          if (waves.length) push(d, 1.6);
           d.vx += (tvx - d.vx) * 0.015 * dt;
           d.vy += (tvy - d.vy) * 0.015 * dt;
           if (STIR && pointer.active) {
@@ -374,9 +545,9 @@ export function FlyerStage() {
         const speed = Math.hypot(d.vx, d.vy);
         const twinkle = 0.3 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.3 + d.tw));
         const goalA = d.near ? 0.16 : Math.min(1, twinkle + speed * 0.08);
-        d.a += (goalA - d.a) * 0.04 * dt;
+        d.a += (goalA - d.a) * (now < introUntil + 400 ? 0.02 : 0.04) * dt;
         d.r += (d.r0 - d.r) * 0.1 * dt;
-        if (d.near) {
+        if (d.near && !lite) {
           const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 2);
           g.addColorStop(0, `rgba(255,255,255,${d.a.toFixed(3)})`);
           g.addColorStop(1, "rgba(255,255,255,0)");
@@ -421,8 +592,12 @@ export function FlyerStage() {
           d.a += (g.a - d.a) * 0.12 * dt;
           d.r += (g.r - d.r) * 0.2 * dt;
         } else {
-          d.vx = (d.vx + (g.x - d.x) * d.k * dt) * Math.pow(0.74, dt);
-          d.vy = (d.vy + (g.y - d.y) * d.k * dt) * Math.pow(0.74, dt);
+          const slow = now < slowUntil;
+          const k = slow ? d.k * 0.22 : d.k;
+          const damp = slow ? 0.9 : 0.74;
+          if (waves.length) push(d, 0.8);
+          d.vx = (d.vx + (g.x - d.x) * k * dt) * Math.pow(damp, dt);
+          d.vy = (d.vy + (g.y - d.y) * k * dt) * Math.pow(damp, dt);
           d.x += d.vx * dt;
           d.y += d.vy * dt;
           d.a += (g.a - d.a) * 0.12 * dt;
@@ -442,22 +617,48 @@ export function FlyerStage() {
       });
       dctx.globalAlpha = 1;
 
-      // The small dot that trails the pointer.
-      if (STIR && pointer.active && !reduced) {
-        dctx.beginPath();
-        dctx.arc(cursor.x, cursor.y, 4, 0, Math.PI * 2);
-        dctx.fill();
+      // The small dot that trails a mouse: a ring over things to click, a
+      // point over text.
+      if (mouse && pointer.active && !reduced) {
+        const goalR = hover === "link" ? 20 : hover === "text" ? 1.6 : 4;
+        ring += (goalR - ring) * Math.min(1, 0.22 * dt);
+        if (ring > 6) {
+          dctx.strokeStyle = "#ffffff";
+          dctx.lineWidth = 1.5;
+          dctx.beginPath();
+          dctx.arc(cursor.x, cursor.y, ring, 0, Math.PI * 2);
+          dctx.stroke();
+        } else {
+          dctx.beginPath();
+          dctx.arc(cursor.x, cursor.y, ring, 0, Math.PI * 2);
+          dctx.fill();
+        }
       }
 
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
 
+    // Nothing runs while the tab is hidden.
+    const onVisible = () => {
+      cancelAnimationFrame(raf);
+      if (document.hidden) return;
+      t0 = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("deviceorientation", onTilt);
+      document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("visibilitychange", onVisible);
       document.removeEventListener("pointerleave", onLeave);
       document.documentElement.classList.remove("zb-robot");
     };
