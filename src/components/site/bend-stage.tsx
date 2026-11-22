@@ -5,33 +5,46 @@ import { context, program } from "./gl";
 
 // The screenshots as sheets of paper. Each picture marked [data-bend] is drawn
 // again on one canvas over the page, on a fine mesh, and the real <img> is
-// hidden but stays in place for layout, links and screen readers. A sheet
-// rising from the bottom of the screen has its lower edge flared and curled
-// towards you, catching a silver sheen where it bends; it flattens as it
-// reaches the middle, and its top edge lifts a little as it leaves. Scrolling
-// fast bends it more. The pictures wait in grey until their card is hovered,
-// as before. Pictures inside a scrolling strip are clipped to the strip.
-// With reduced motion, or without WebGL, the plain images stay.
+// hidden but stays in place for layout, links and screen readers.
+//
+// The bend belongs to the screen, not to the picture: the bottom of the
+// window is a curved lip. Whatever part of a sheet passes through it flares out
+// sideways and is squashed flatter, as if the paper were curling under towards
+// you, and a pale pearly sheen washes over the curled part. As the page
+// scrolls, the curl travels up through the sheet and lets go of it as it
+// rises; the faster the scroll, the higher the lip reaches. The top of the
+// window has a smaller lip of its own. The pictures wait in grey until their
+// card is hovered, as before. With reduced motion, or without WebGL, the plain
+// images stay.
 
 const VS = `
 attribute vec2 aUv;
 uniform vec4 uRect;   // x, y, w, h in CSS pixels
 uniform vec2 uView;   // viewport in CSS pixels
-uniform float uBend;  // -1 (leaving at the top) .. 1 (rising from the bottom)
+uniform float uLip;   // where the bottom curl starts, as a share of the height
 varying vec2 vUv;
-varying float vSheen;
+varying float vCurl;
 void main(){
-  float s = uBend > 0.0 ? aUv.y : 1.0 - aUv.y;
-  float k = smoothstep(0.2, 1.0, s);
-  k *= k;
-  float b = abs(uBend);
   vec2 pos = uRect.xy + aUv * uRect.zw;
-  pos.x += (aUv.x - 0.5) * uRect.z * 0.34 * b * k;
-  pos.y += sign(uBend) * uRect.w * 0.16 * b * k;
-  pos.y -= sign(uBend) * sin(aUv.x * 3.14159) * uRect.w * 0.05 * b * k;
+  float H = uView.y;
+  float y0 = H * uLip;
+  float L = H - y0;
+  float sb = max(pos.y - y0, 0.0);
+  float t = clamp(sb / L, 0.0, 1.0);
+  float Lt = H * 0.16;
+  float st = max(Lt - pos.y, 0.0);
+  float tt = clamp(st / Lt, 0.0, 1.0);
+  float f = t * t;
+  float g = tt * tt;
+  // Flare: the sheet widens about its own middle, at most at the screen edge.
+  pos.x += (aUv.x - 0.5) * uRect.z * (0.34 * f + 0.10 * g);
+  // Curl: the curled part is seen edge-on, so it shortens; what lies beyond
+  // the edge comes into view a little early, never crushed.
+  pos.y -= 0.22 * min(sb, L) * t;
+  pos.y += 0.22 * min(st, Lt) * tt;
   vUv = aUv;
-  vSheen = b * k;
-  gl_Position = vec4(pos.x / uView.x * 2.0 - 1.0, 1.0 - pos.y / uView.y * 2.0, 0.0, 1.0);
+  vCurl = clamp(f + g * 0.5, 0.0, 1.0);
+  gl_Position = vec4(pos.x / uView.x * 2.0 - 1.0, 1.0 - pos.y / H * 2.0, 0.0, 1.0);
 }`;
 
 const FS = `
@@ -44,7 +57,7 @@ uniform float uGrey;    // 1 = waiting in grey, 0 = in colour
 uniform float uDim;     // how dark the grey is
 uniform float uTime;
 varying vec2 vUv;
-varying float vSheen;
+varying float vCurl;
 void main(){
   vec2 q = vUv * uSize;
   vec2 c = abs(q - uSize * 0.5) - (uSize * 0.5 - uRadius);
@@ -53,9 +66,11 @@ void main(){
   vec3 col = texture2D(uTex, vUv * uCrop).rgb;
   float l = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(col, vec3(l) * uDim, uGrey);
-  float band = 0.5 + 0.5 * sin(vUv.y * 11.0 + vUv.x * 5.0 - uTime * 1.6);
-  col += vec3(0.95, 0.97, 1.0) * vSheen * (0.18 + 0.32 * band);
-  col *= 1.0 - vSheen * 0.25 * (1.0 - band);
+  // The pearl: soft pale bands that drift across the curled part.
+  float w1 = 0.5 + 0.5 * sin(vUv.x * 7.0 + vUv.y * 9.0 - uTime * 0.9);
+  float w2 = 0.5 + 0.5 * sin(vUv.x * 13.0 - vUv.y * 5.0 + uTime * 0.7);
+  vec3 pearl = vec3(0.86, 0.87, 0.9) + vec3(0.12) * w1 - vec3(0.08) * w2;
+  col = mix(col, pearl, smoothstep(0.0, 1.0, vCurl) * 0.66);
   gl_FragColor = vec4(col * a, a);
 }`;
 
@@ -63,7 +78,6 @@ interface Sheet {
   img: HTMLImageElement;
   tex: WebGLTexture | null;
   ready: boolean;
-  bend: number;
   grey: number;
   dim: number;
   hoverEl: Element | null;
@@ -108,7 +122,7 @@ export function BendStage() {
     const U = {
       rect: u("uRect"),
       view: u("uView"),
-      bend: u("uBend"),
+      lip: u("uLip"),
       size: u("uSize"),
       crop: u("uCrop"),
       radius: u("uRadius"),
@@ -134,7 +148,6 @@ export function BendStage() {
         img,
         tex: null,
         ready: false,
-        bend: 0,
         grey: 1,
         dim: img.dataset.bend === "dim" ? 0.5 : 0.95,
         hoverEl: img.closest(".card, figure"),
@@ -165,6 +178,7 @@ export function BendStage() {
     window.addEventListener("resize", resize);
 
     let raf = 0;
+    let lip = 0.66;
     let t0 = performance.now();
     const frame = (now: number) => {
       const dt = Math.min(3, Math.max(0, (now - t0) / 16.67));
@@ -173,18 +187,14 @@ export function BendStage() {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform2f(U.view, W, H);
       gl.uniform1f(U.time, now / 1000);
-      const v = window.__zbScroll?.v ?? 0;
+      // The faster the scroll, the higher the lip reaches up the screen.
+      const v = Math.abs(window.__zbScroll?.v ?? 0);
+      lip += (0.66 - Math.min(0.2, v * 0.006) - lip) * (1 - Math.pow(1 - 0.12, dt));
+      gl.uniform1f(U.lip, lip);
 
       for (const s of sheets) {
         const r = s.img.getBoundingClientRect();
         if (!s.ready || r.width < 2 || r.bottom < -H * 0.3 || r.top > H * 1.3) continue;
-        // Where the sheet is: below the middle it bends up from its bottom edge,
-        // above the middle a little from its top edge; speed adds to it.
-        const p = (r.top + r.height / 2 - H / 2) / H;
-        let goal = p > 0 ? Math.min(1, Math.max(0, (p - 0.05) / 0.45)) : -Math.min(0.55, Math.max(0, (-p - 0.15) / 0.55));
-        goal += Math.max(-0.35, Math.min(0.35, v * 0.012));
-        goal = Math.max(-1, Math.min(1, goal));
-        s.bend += (goal - s.bend) * (1 - Math.pow(1 - 0.16, dt));
         const lit = s.hoverEl?.matches(":hover, :focus-within") ? 0 : 1;
         s.grey += (lit - s.grey) * (1 - Math.pow(1 - 0.1, dt));
 
@@ -201,7 +211,6 @@ export function BendStage() {
         gl.uniform2f(U.crop, ia > ea ? ea / ia : 1, ia > ea ? 1 : ia / ea);
         gl.uniform4f(U.rect, r.left, r.top, r.width, r.height);
         gl.uniform2f(U.size, r.width, r.height);
-        gl.uniform1f(U.bend, s.bend);
         gl.uniform1f(U.radius, s.radius);
         gl.uniform1f(U.grey, s.grey);
         gl.uniform1f(U.dim, s.dim);
