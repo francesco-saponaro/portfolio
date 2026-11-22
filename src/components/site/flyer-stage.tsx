@@ -17,8 +17,9 @@ import { ARROW, BLOCK, digits, ENVELOPE, EYES, FACE, HAPPY_EYES, type Cell } fro
 //   projects                four small blocks circling
 //   contact                 an envelope
 //
-// Near the pointer the dust itself snaps into a grid and lights up, as if the
-// whole background were a dot-matrix display. The companion is drawn with a
+// The face glows and gives off dust, more when the pointer moves; the pointer
+// stirs the dust like wind, fast dots streak, close ones are large and soft,
+// and a small dot trails the pointer. The companion is drawn with a
 // "difference" blend, so it stays white on the dark page
 // and turns dark over a light picture. With reduced motion it does not travel
 // between shapes, it is simply there.
@@ -133,19 +134,19 @@ export function FlyerStage() {
     // behind the content; the companion recruits the nearest free dots for
     // each shape it takes and lets them go again when it needs fewer, so it
     // is always made of the background it came out of.
-    const COUNT = small ? 150 : 360;
+    const COUNT = small ? 150 : 340;
     const parts = Array.from({ length: COUNT }, () => {
-      const hx = Math.random();
-      const hy = Math.random();
+      // Depth: most dust is small and far; one in ten is close, big and soft.
+      const near = Math.random() < 0.1;
+      const d = near ? 0.9 + Math.random() * 0.1 : 0.15 + Math.random() * 0.7;
       return {
-        hx,
-        hy,
-        x: hx * W,
-        y: hy * H,
+        x: Math.random() * W,
+        y: Math.random() * H,
         vx: 0,
         vy: 0,
-        d: 0.2 + Math.random() * 0.8,
-        r0: 0.6 + Math.random() * 1.3,
+        d,
+        near,
+        r0: near ? 3 + Math.random() * 4 : 0.6 + d * 1.4,
         r: 1,
         a: 0.5,
         c: DUST[(Math.random() * DUST.length) | 0]!,
@@ -157,8 +158,9 @@ export function FlyerStage() {
     /** The companion's dots, in the order of the shape's cells. */
     const members: number[] = [];
     const figure = digits(document.querySelector(".zb .figures dt")?.textContent?.trim() || "399");
-    const LENS = small ? 0 : 150;
-    const CELL = 16;
+    const STIR = small ? 0 : 230;
+    const cursor = { x: -9999, y: -9999, px: -9999, py: -9999, vx: 0, vy: 0 };
+    let emit = 0;
 
     let dock: HTMLElement | null = null;
     let target: Target = { mode: "face", x: W * 0.75, y: H * 0.45, s: 300, side: 0 };
@@ -186,7 +188,7 @@ export function FlyerStage() {
       const eyes: Cell[] = happy ? HAPPY_EYES : EYES.map(([x, y]) => [x + lx, y + ly] as Cell).filter(([, y]) => !blink || y === ly);
       const isEye = (x: number, y: number) => eyes.some(([ex, ey]) => ex === x && ey === y);
       return FACE.map(([x, y]) =>
-        isEye(x, y) ? { x: cx + x * pitch, y: cy + y * pitch, a: 1, r: pitch * 0.42 } : { x: cx + x * pitch, y: cy + y * pitch, a: 0.4, r: pitch * 0.28 },
+        isEye(x, y) ? { x: cx + x * pitch, y: cy + y * pitch, a: 1, r: pitch * 0.42 } : { x: cx + x * pitch, y: cy + y * pitch, a: 0.72, r: pitch * 0.3 },
       );
     };
 
@@ -260,8 +262,6 @@ export function FlyerStage() {
         const i = members.pop()!;
         const d = parts[i]!;
         d.body = false;
-        d.hx = d.x / W - (pointer.sx - 0.5) * -40 * d.d / W;
-        d.hy = d.y / H - (pointer.sy - 0.5) * -40 * d.d / H;
       }
       if (members.length < goals.length) {
         const free = parts
@@ -280,69 +280,126 @@ export function FlyerStage() {
       dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dctx.clearRect(0, 0, W, H);
 
-      // Under the pointer the background shows what it is made of: a faint
-      // grid of dots, brightest at the centre, fading out at the edge.
-      if (LENS && pointer.active && !reduced) {
-        const c0 = Math.floor((pointer.x - LENS) / CELL);
-        const c1 = Math.ceil((pointer.x + LENS) / CELL);
-        const r0 = Math.floor((pointer.y - LENS) / CELL);
-        const r1 = Math.ceil((pointer.y + LENS) / CELL);
-        ctx.fillStyle = "#ffffff";
-        for (let gy = r0; gy <= r1; gy++) {
-          for (let gx = c0; gx <= c1; gx++) {
-            const x = gx * CELL;
-            const y = gy * CELL;
-            const dist = Math.hypot(x - pointer.x, y - pointer.y);
-            if (dist >= LENS) continue;
-            const f = 1 - dist / LENS;
-            const wave = 0.75 + 0.25 * Math.sin(time * 3 - dist * 0.06);
-            ctx.globalAlpha = f * f * 0.55 * wave;
-            ctx.beginPath();
-            ctx.arc(x, y, 0.8 + f * 1.4, 0, Math.PI * 2);
-            ctx.fill();
+      // The pointer's own speed, smoothed, and a small dot that trails it.
+      if (pointer.active) {
+        if (cursor.px < -999) {
+          cursor.px = pointer.x;
+          cursor.py = pointer.y;
+          cursor.x = pointer.x;
+          cursor.y = pointer.y;
+        }
+        cursor.vx += (pointer.x - cursor.px - cursor.vx) * 0.3;
+        cursor.vy += (pointer.y - cursor.py - cursor.vy) * 0.3;
+        cursor.px = pointer.x;
+        cursor.py = pointer.y;
+        cursor.x += (pointer.x - cursor.x) * Math.min(1, 0.22 * dt);
+        cursor.y += (pointer.y - cursor.y) * Math.min(1, 0.22 * dt);
+      } else {
+        cursor.vx *= 0.9;
+        cursor.vy *= 0.9;
+      }
+      const stirSpeed = Math.hypot(cursor.vx, cursor.vy);
+
+      // A soft halo behind the face, the light it gives off.
+      const glowing = target.mode === "face" && members.length > 40;
+      if (glowing) {
+        const R = clamp(p.s * 0.085, 7, small ? 14 : 30) * 9;
+        const breathe = 0.85 + 0.15 * Math.sin(time * 1.6);
+        const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        halo.addColorStop(0, `rgba(255,255,255,${(0.11 * breathe).toFixed(3)})`);
+        halo.addColorStop(0.45, `rgba(255,255,255,${(0.04 * breathe).toFixed(3)})`);
+        halo.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = halo;
+        ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+
+        // The face gives off dust, more when the pointer moves: a free dot
+        // leaves from inside the face, outwards, and joins the drift.
+        if (!reduced) {
+          emit += dt * (0.18 + Math.min(2.5, stirSpeed * 0.06));
+          const size = R / 9 * 5;
+          while (emit >= 1) {
+            emit -= 1;
+            const free = parts[(Math.random() * COUNT) | 0]!;
+            if (free.body || free.near) continue;
+            const ang = Math.random() * Math.PI * 2;
+            const at = Math.random() * size;
+            free.x = cx + Math.cos(ang) * at;
+            free.y = cy + Math.sin(ang) * at;
+            const sp = (1.5 + Math.random() * 3.5) * (0.6 + free.d);
+            free.vx = Math.cos(ang) * sp;
+            free.vy = Math.sin(ang) * sp;
+            free.a = 1;
           }
         }
-        ctx.globalAlpha = 1;
       }
 
-      // The dust: drifting, with a little parallax, and near the pointer it
-      // snaps into a grid and lights up, like LEDs under the cursor.
+      // The dust: a slow upward drift with some sway; the pointer stirs it
+      // like wind, along its path and in a swirl around it. Fast dots draw as
+      // short streaks, close ones as large soft discs.
       for (const d of parts) {
         if (d.body) continue;
         if (!reduced) {
-          d.hy -= 0.00006 * d.d * dt;
-          d.hx += Math.sin(time * 0.2 + d.tw) * 0.00004 * dt;
-          if (d.hy < -0.02) {
-            d.hy = 1.02;
-            d.y = d.hy * H;
+          const tvx = Math.sin(time * 0.3 + d.tw) * 0.12 * d.d;
+          const tvy = -0.22 * d.d;
+          d.vx += (tvx - d.vx) * 0.015 * dt;
+          d.vy += (tvy - d.vy) * 0.015 * dt;
+          if (STIR && pointer.active) {
+            const dx = d.x - pointer.x;
+            const dy = d.y - pointer.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            if (dist < STIR) {
+              const f = (1 - dist / STIR) ** 2 * d.d;
+              d.vx += cursor.vx * f * 0.09 * dt;
+              d.vy += cursor.vy * f * 0.09 * dt;
+              const swirl = Math.min(6, stirSpeed) * f * 0.05 * dt;
+              d.vx += (-dy / dist) * swirl;
+              d.vy += (dx / dist) * swirl;
+              if (dist < 60) {
+                d.vx += (dx / dist) * (1 - dist / 60) * 0.6 * dt;
+                d.vy += (dy / dist) * (1 - dist / 60) * 0.6 * dt;
+              }
+            }
           }
+          d.vx *= Math.pow(0.975, dt);
+          d.vy *= Math.pow(0.975, dt);
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          if (d.y < -20) {
+            d.y = H + 20;
+            d.x = Math.random() * W;
+          } else if (d.y > H + 30) d.y = -20;
+          if (d.x < -30) d.x = W + 30;
+          else if (d.x > W + 30) d.x = -30;
         }
-        let gx = d.hx * W + (pointer.sx - 0.5) * -40 * d.d;
-        let gy = d.hy * H + (pointer.sy - 0.5) * -40 * d.d;
-        let lit = 0;
-        if (LENS && pointer.active && !reduced) {
-          const dist = Math.hypot(gx - pointer.x, gy - pointer.y);
-          if (dist < LENS) {
-            lit = Math.pow(1 - dist / LENS, 1.4);
-            gx += (Math.round(gx / CELL) * CELL - gx) * Math.min(1, lit * 1.6);
-            gy += (Math.round(gy / CELL) * CELL - gy) * Math.min(1, lit * 1.6);
-          }
+        const speed = Math.hypot(d.vx, d.vy);
+        const twinkle = 0.3 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.3 + d.tw));
+        const goalA = d.near ? 0.16 : Math.min(1, twinkle + speed * 0.08);
+        d.a += (goalA - d.a) * 0.04 * dt;
+        d.r += (d.r0 - d.r) * 0.1 * dt;
+        if (d.near) {
+          const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r * 2);
+          g.addColorStop(0, `rgba(255,255,255,${d.a.toFixed(3)})`);
+          g.addColorStop(1, "rgba(255,255,255,0)");
+          ctx.fillStyle = g;
+          ctx.fillRect(d.x - d.r * 2, d.y - d.r * 2, d.r * 4, d.r * 4);
+          continue;
         }
-        if (reduced) {
-          d.x = gx;
-          d.y = gy;
-        } else {
-          d.x += (gx - d.x) * Math.min(1, 0.12 * dt);
-          d.y += (gy - d.y) * Math.min(1, 0.12 * dt);
-        }
-        const twinkle = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.3 + d.tw));
-        d.a += (Math.max(twinkle, lit) - d.a) * 0.2 * dt;
-        d.r += (d.r0 + lit * 1.4 - d.r) * 0.2 * dt;
         ctx.globalAlpha = Math.min(1, d.a);
-        ctx.fillStyle = lit > 0.25 ? "#ffffff" : d.c;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, Math.max(0.4, d.r), 0, Math.PI * 2);
-        ctx.fill();
+        if (speed > 1.1 && !reduced) {
+          const len = Math.min(26, speed * 3.2);
+          ctx.strokeStyle = speed > 2 ? "#ffffff" : d.c;
+          ctx.lineWidth = Math.max(0.8, d.r * 1.5);
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x - (d.vx / speed) * len, d.y - (d.vy / speed) * len);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = d.c;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, Math.max(0.4, d.r), 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
       ctx.globalAlpha = 1;
 
@@ -371,12 +428,26 @@ export function FlyerStage() {
           d.a += (g.a - d.a) * 0.12 * dt;
           d.r += (g.r - d.r) * 0.2 * dt;
         }
-        dctx.globalAlpha = Math.min(1, Math.max(0, d.a));
+        const alpha = Math.min(1, Math.max(0, d.a));
+        if (glowing && d.r > 3) {
+          dctx.globalAlpha = alpha * 0.14;
+          dctx.beginPath();
+          dctx.arc(d.x, d.y, d.r * 2.4, 0, Math.PI * 2);
+          dctx.fill();
+        }
+        dctx.globalAlpha = alpha;
         dctx.beginPath();
         dctx.arc(d.x, d.y, Math.max(0.5, d.r), 0, Math.PI * 2);
         dctx.fill();
       });
       dctx.globalAlpha = 1;
+
+      // The small dot that trails the pointer.
+      if (STIR && pointer.active && !reduced) {
+        dctx.beginPath();
+        dctx.arc(cursor.x, cursor.y, 4, 0, Math.PI * 2);
+        dctx.fill();
+      }
 
       raf = requestAnimationFrame(frame);
     };
