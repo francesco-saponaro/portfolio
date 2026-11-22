@@ -72,6 +72,25 @@ body:has(.zb) {
   z-index: 0;
   pointer-events: none;
 }
+/* The bending pictures are drawn over the page; the real images stay in place,
+   unseen, for layout, links and screen readers. */
+.zb .stage.bend-stage {
+  z-index: 2;
+}
+.zb-bend .zb img[data-bend] {
+  opacity: 0 !important;
+}
+/* Smooth scrolling takes over from the browser's. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+html.lenis.lenis-stopped {
+  overflow: hidden;
+}
 .zb ::selection {
   background: var(--mint);
   color: var(--on-mint);
@@ -921,11 +940,17 @@ body:has(.zb) {
 }
 
 /* ---------- Project cards with a screenshot ---------- */
+/* A project is its picture, with the words underneath on the page itself. */
 .zb .card.project {
   flex-basis: clamp(300px, 31vw, 470px);
   padding: 0;
-  overflow: hidden;
   gap: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.zb .card.project:hover {
+  transform: none;
+  background: transparent;
 }
 .zb .project-shot {
   display: block;
@@ -934,6 +959,7 @@ body:has(.zb) {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: top left;
+  border-radius: 20px;
   background: var(--bg-2);
   pointer-events: none;
   transition:
@@ -953,7 +979,7 @@ body:has(.zb) {
   flex: 1;
   flex-direction: column;
   gap: 14px;
-  padding: 24px 26px 28px;
+  padding: 22px 4px 8px;
 }
 .zb .card.project h3 {
   margin-top: 0;

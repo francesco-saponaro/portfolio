@@ -510,7 +510,7 @@ export function FlyerStage() {
           const tvx = Math.sin(time * 0.3 + d.tw) * 0.12 * d.d + tilt.x * 0.9 * d.d;
           const tvy = -0.22 * d.d + tilt.y * 0.9 * d.d;
           d.y -= ds * 0.18 * d.d;
-          d.vy -= clamp(scrollV, -60, 60) * 0.006 * d.d * dt;
+          d.vy -= clamp(scrollV, -40, 40) * 0.0025 * d.d * dt;
           if (waves.length) push(d, 1.6);
           d.vx += (tvx - d.vx) * 0.015 * dt;
           d.vy += (tvy - d.vy) * 0.015 * dt;

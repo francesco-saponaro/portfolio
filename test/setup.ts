@@ -2,11 +2,8 @@ import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
 // next/font needs the Next compiler; the tests only need the class names.
-vi.mock("next/font/google", () => ({
-  Instrument_Sans: () => ({ variable: "font-instrument", className: "font-instrument" }),
-}));
 vi.mock("next/font/local", () => ({
-  default: () => ({ variable: "font-archivo", className: "font-archivo" }),
+  default: () => ({ variable: "font-local", className: "font-local" }),
 }));
 
 // jsdom has no canvas, media queries or intersection observer; the robot and

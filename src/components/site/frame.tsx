@@ -4,15 +4,22 @@ import "./robot.css";
 import { archivo, instrument } from "./fonts";
 import { Motion } from "./client";
 import { FlyerStage } from "./flyer-stage";
+import { LightStage } from "./light-stage";
+import { BendStage } from "./bend-stage";
+import { SmoothScroll } from "./smooth-scroll";
 import { BotDock } from "./robot";
 import { PERSON } from "@/data/site";
 
-// The page frame: the fonts, the dust canvas with the flying companion, the skip
-// link, the footer and the entrance observer.
+// The page frame: the fonts, the smooth scrolling, the lit ground behind the
+// page, the dust canvas with the flying companion, the bending pictures, the
+// skip link, the footer and the entrance observer.
 export function SiteFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className={`zb ${archivo.variable} ${instrument.variable}`}>
+      <SmoothScroll />
+      <LightStage />
       <FlyerStage />
+      <BendStage />
       <a href="#content" className="sr-only">
         Skip to content
       </a>

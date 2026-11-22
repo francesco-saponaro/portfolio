@@ -226,7 +226,7 @@ export function ScreenSwitcher({
             hidden={i !== on}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={s.src} alt={s.alt} width={1600} height={1000} loading={i === 0 ? "eager" : "lazy"} decoding="async" />
+            <img data-bend="dim" src={s.src} alt={s.alt} width={1600} height={1000} loading={i === 0 ? "eager" : "lazy"} decoding="async" />
             <figcaption>{s.caption}</figcaption>
           </figure>
         ))}
