@@ -31,7 +31,7 @@ export function Projects({ projects = PROJECTS }: { projects?: Project[] }) {
             <article key={p.slug} className="card project">
               {p.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="project-shot" src={p.image.src} alt={p.image.alt} width={960} height={600} loading="lazy" decoding="async" draggable={false} />
+                <img className="project-shot" data-bend="" src={p.image.src} alt={p.image.alt} width={960} height={600} loading="lazy" decoding="async" draggable={false} />
               ) : null}
               <div className="project-body">
                 <h3>{p.name}</h3>
