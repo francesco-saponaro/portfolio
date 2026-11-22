@@ -792,6 +792,13 @@ body:has(.zb) {
   aspect-ratio: 16 / 10;
   border-radius: 18px;
   background: var(--bg-2);
+  /* The app is light; on the black page it waits in grey until looked at. */
+  filter: grayscale(1) brightness(0.5) contrast(1.05);
+  transition: filter 0.5s var(--ease-out);
+}
+.zb .screens-shot:hover img,
+.zb .screens-shot:focus-within img {
+  filter: none;
 }
 .zb .screens-shot.on img {
   animation: shot-in 0.45s var(--ease-out) both;
