@@ -4,16 +4,16 @@ import "./robot.css";
 import { archivo, instrument } from "./fonts";
 import { FsMark } from "./mark";
 import { Motion } from "./client";
-import { RobotStage } from "./robot-stage";
+import { FlyerStage } from "./flyer-stage";
 import { BotDock } from "./robot";
 import { PERSON } from "@/data/site";
 
-// The page frame: the fonts, the dust canvas with the flying robot, the skip
+// The page frame: the fonts, the dust canvas with the flying companion, the skip
 // link, the footer and the entrance observer.
 export function SiteFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className={`zb ${archivo.variable} ${instrument.variable}`}>
-      <RobotStage />
+      <FlyerStage />
       <a href="#content" className="sr-only">
         Skip to content
       </a>

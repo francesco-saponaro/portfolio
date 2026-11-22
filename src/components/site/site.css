@@ -49,9 +49,29 @@
 body:has(.zb) {
   background: #0a0a0a;
 }
-.zb > *:not(.stage) {
+.zb > *:not(.stage):not(.mercury-stage) {
   position: relative;
   z-index: 1;
+}
+/* The companion's layers: the dots draw on their own canvas over the page,
+   the mercury drop in a full-screen SVG; neither takes a click. */
+.zb .stage.dots-stage,
+.zb .mercury-stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+.zb .mercury-stage {
+  overflow: visible;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.5));
+}
+/* White on the dark page, dark where it crosses a light picture. */
+.zb .stage.dots-stage,
+.zb .mercury-stage.scanning {
+  mix-blend-mode: difference;
 }
 .zb .stage {
   position: fixed;
