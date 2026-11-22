@@ -3,9 +3,9 @@
 import { useEffect, useRef } from "react";
 import { ARROW, BLOCK, digits, ENVELOPE, EYES, FACE, HAPPY_EYES, type Cell } from "./dotmatrix";
 
-// The page's companion: a small dot-matrix creature made of the same dust
-// that drifts behind the page. It gathers from the dust when the page opens,
-// then follows the visitor from dock to dock ([data-bot] elements nearest
+// The page's companion: a small dot-matrix creature made of the dust that
+// drifts behind the page. It gathers out of the nearest dust when the page
+// opens, gives dots back when a shape needs fewer, and follows the visitor from dock to dock ([data-bot] elements nearest
 // the middle of the screen) and changes with the section, always snapping its
 // dots to an exact grid like an LED display:
 //
@@ -17,7 +17,9 @@ import { ARROW, BLOCK, digits, ENVELOPE, EYES, FACE, HAPPY_EYES, type Cell } fro
 //   projects                four small blocks circling
 //   contact                 an envelope
 //
-// It is drawn with a "difference" blend, so it stays white on the dark page
+// Near the pointer the dust itself snaps into a grid and lights up, as if the
+// whole background were a dot-matrix display. The companion is drawn with a
+// "difference" blend, so it stays white on the dark page
 // and turns dark over a light picture. With reduced motion it does not travel
 // between shapes, it is simply there.
 
@@ -127,24 +129,36 @@ export function FlyerStage() {
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", onLeave);
 
-    const dust = Array.from({ length: small ? 60 : 150 }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      d: 0.2 + Math.random() * 0.8,
-      r: 0.6 + Math.random() * 1.6,
-      c: DUST[(Math.random() * DUST.length) | 0]!,
-      ox: 0,
-      oy: 0,
-      tw: Math.random() * Math.PI * 2,
-    }));
-
-    // The creature's dots start where the dust is, then gather.
-    const POOL = 140;
-    const dots = Array.from({ length: POOL }, (_, i) => {
-      const d = dust[i % dust.length]!;
-      return { x: d.x * W, y: d.y * H, vx: 0, vy: 0, a: 0, r: 1.5, k: 0.1 + Math.random() * 0.05 };
+    // One set of dots for the whole page. Free dots are the dust drifting
+    // behind the content; the companion recruits the nearest free dots for
+    // each shape it takes and lets them go again when it needs fewer, so it
+    // is always made of the background it came out of.
+    const COUNT = small ? 150 : 360;
+    const parts = Array.from({ length: COUNT }, () => {
+      const hx = Math.random();
+      const hy = Math.random();
+      return {
+        hx,
+        hy,
+        x: hx * W,
+        y: hy * H,
+        vx: 0,
+        vy: 0,
+        d: 0.2 + Math.random() * 0.8,
+        r0: 0.6 + Math.random() * 1.3,
+        r: 1,
+        a: 0.5,
+        c: DUST[(Math.random() * DUST.length) | 0]!,
+        tw: Math.random() * Math.PI * 2,
+        k: 0.1 + Math.random() * 0.05,
+        body: false,
+      };
     });
+    /** The companion's dots, in the order of the shape's cells. */
+    const members: number[] = [];
     const figure = digits(document.querySelector(".zb .figures dt")?.textContent?.trim() || "399");
+    const LENS = small ? 0 : 150;
+    const CELL = 16;
 
     let dock: HTMLElement | null = null;
     let target: Target = { mode: "face", x: W * 0.75, y: H * 0.45, s: 300, side: 0 };
@@ -187,38 +201,6 @@ export function FlyerStage() {
         pointer.sy += (pointer.y / H - pointer.sy) * 0.05 * dt;
       }
 
-      // Dust.
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      for (const d of dust) {
-        if (!reduced) {
-          d.y -= 0.00006 * d.d * dt;
-          d.x += Math.sin(time * 0.2 + d.tw) * 0.00004 * dt;
-          if (d.y < -0.02) d.y = 1.02;
-        }
-        let x = d.x * W + (pointer.sx - 0.5) * -40 * d.d;
-        let y = d.y * H + (pointer.sy - 0.5) * -40 * d.d;
-        const dx = x + d.ox - pointer.x;
-        const dy = y + d.oy - pointer.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 130 * 130 && !reduced) {
-          const dd = Math.sqrt(d2) || 1;
-          const f = (1 - dd / 130) * 3.2;
-          d.ox += (dx / dd) * f * dt;
-          d.oy += (dy / dd) * f * dt;
-        }
-        d.ox *= 0.94;
-        d.oy *= 0.94;
-        x += d.ox;
-        y += d.oy;
-        ctx.globalAlpha = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.3 + d.tw));
-        ctx.fillStyle = d.c;
-        ctx.beginPath();
-        ctx.arc(x, y, d.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
       // Where to be, and what.
       const found = findTarget(W, H, small, dock);
       dock = found.dock;
@@ -252,12 +234,12 @@ export function FlyerStage() {
         // A line of dots sweeping the screenshot, a fainter row trailing it.
         const r = target.rect;
         const step = 12;
-        const n = Math.min(POOL, Math.floor((r.width - 24) / step) + 1);
+        const n = Math.min(90, Math.floor((r.width - 24) / step) + 1);
         const sweep = reduced ? 0.5 : (Math.sin(time * 0.9) + 1) / 2;
         const ly = r.top + 20 + sweep * (r.height - 40);
         const trail = Math.cos(time * 0.9) >= 0 ? -1 : 1;
         for (let i = 0; i < n; i++) goals.push({ x: r.left + 12 + i * step, y: ly, a: 1, r: 2.4, tight: true });
-        for (let i = 0; i < Math.min(POOL - n, Math.ceil(n / 2)); i++) goals.push({ x: r.left + 12 + i * 2 * step, y: ly + trail * step, a: 0.35, r: 1.8, tight: true });
+        for (let i = 0; i < Math.ceil(n / 2); i++) goals.push({ x: r.left + 12 + i * 2 * step, y: ly + trail * step, a: 0.35, r: 1.8, tight: true });
       } else if (target.mode === "figure") {
         goals = place(figure, cx, cy, pitch, 1, big);
       } else if (target.mode === "contact") {
@@ -270,46 +252,130 @@ export function FlyerStage() {
       } else if (target.mode === "point" && target.side && arrived && now > happyUntil) {
         goals = place(ARROW, cx, cy, pitch, 1, big, target.side);
       } else {
-        goals = face(cx, cy, target.mode === "corner" ? 6 : clamp(p.s * 0.03, 7, 12), now);
+        goals = face(cx, cy, target.mode === "corner" ? 6 : clamp(p.s * 0.085, 7, small ? 14 : 30), now);
       }
 
-      // Every dot to its goal; spare dots fade where they are.
+      // Recruit the nearest free dots, or release the extra ones.
+      while (members.length > goals.length) {
+        const i = members.pop()!;
+        const d = parts[i]!;
+        d.body = false;
+        d.hx = d.x / W - (pointer.sx - 0.5) * -40 * d.d / W;
+        d.hy = d.y / H - (pointer.sy - 0.5) * -40 * d.d / H;
+      }
+      if (members.length < goals.length) {
+        const free = parts
+          .map((d, i) => ({ i, dist: d.body ? Infinity : (d.x - cx) ** 2 + (d.y - cy) ** 2 }))
+          .filter((f) => f.dist < Infinity)
+          .sort((m, n) => m.dist - n.dist);
+        for (const f of free) {
+          if (members.length >= goals.length) break;
+          parts[f.i]!.body = true;
+          members.push(f.i);
+        }
+      }
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
       dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dctx.clearRect(0, 0, W, H);
-      dctx.fillStyle = "#ffffff";
-      for (let i = 0; i < POOL; i++) {
-        const d = dots[i]!;
-        const g = goals[i];
-        const gx = g ? g.x : cx;
-        const gy = g ? g.y : cy;
-        const ga = g ? g.a : 0;
-        const gr = g ? g.r : 1;
+
+      // Under the pointer the background shows what it is made of: a faint
+      // grid of dots, brightest at the centre, fading out at the edge.
+      if (LENS && pointer.active && !reduced) {
+        const c0 = Math.floor((pointer.x - LENS) / CELL);
+        const c1 = Math.ceil((pointer.x + LENS) / CELL);
+        const r0 = Math.floor((pointer.y - LENS) / CELL);
+        const r1 = Math.ceil((pointer.y + LENS) / CELL);
+        ctx.fillStyle = "#ffffff";
+        for (let gy = r0; gy <= r1; gy++) {
+          for (let gx = c0; gx <= c1; gx++) {
+            const x = gx * CELL;
+            const y = gy * CELL;
+            const dist = Math.hypot(x - pointer.x, y - pointer.y);
+            if (dist >= LENS) continue;
+            const f = 1 - dist / LENS;
+            const wave = 0.75 + 0.25 * Math.sin(time * 3 - dist * 0.06);
+            ctx.globalAlpha = f * f * 0.55 * wave;
+            ctx.beginPath();
+            ctx.arc(x, y, 0.8 + f * 1.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // The dust: drifting, with a little parallax, and near the pointer it
+      // snaps into a grid and lights up, like LEDs under the cursor.
+      for (const d of parts) {
+        if (d.body) continue;
+        if (!reduced) {
+          d.hy -= 0.00006 * d.d * dt;
+          d.hx += Math.sin(time * 0.2 + d.tw) * 0.00004 * dt;
+          if (d.hy < -0.02) {
+            d.hy = 1.02;
+            d.y = d.hy * H;
+          }
+        }
+        let gx = d.hx * W + (pointer.sx - 0.5) * -40 * d.d;
+        let gy = d.hy * H + (pointer.sy - 0.5) * -40 * d.d;
+        let lit = 0;
+        if (LENS && pointer.active && !reduced) {
+          const dist = Math.hypot(gx - pointer.x, gy - pointer.y);
+          if (dist < LENS) {
+            lit = Math.pow(1 - dist / LENS, 1.4);
+            gx += (Math.round(gx / CELL) * CELL - gx) * Math.min(1, lit * 1.6);
+            gy += (Math.round(gy / CELL) * CELL - gy) * Math.min(1, lit * 1.6);
+          }
+        }
         if (reduced) {
           d.x = gx;
           d.y = gy;
-          d.a = ga;
-          d.r = gr;
-        } else if (g?.tight && Math.hypot(gx - d.x, gy - d.y) < 24) {
-          // Close enough: lock onto the line so it stays straight as it sweeps.
-          d.x += (gx - d.x) * Math.min(1, 0.5 * dt);
-          d.y = gy;
-          d.vx = d.vy = 0;
-          d.a += (ga - d.a) * 0.12 * dt;
-          d.r += (gr - d.r) * 0.2 * dt;
         } else {
-          d.vx = (d.vx + (gx - d.x) * d.k * dt) * Math.pow(0.74, dt);
-          d.vy = (d.vy + (gy - d.y) * d.k * dt) * Math.pow(0.74, dt);
+          d.x += (gx - d.x) * Math.min(1, 0.12 * dt);
+          d.y += (gy - d.y) * Math.min(1, 0.12 * dt);
+        }
+        const twinkle = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.3 + d.tw));
+        d.a += (Math.max(twinkle, lit) - d.a) * 0.2 * dt;
+        d.r += (d.r0 + lit * 1.4 - d.r) * 0.2 * dt;
+        ctx.globalAlpha = Math.min(1, d.a);
+        ctx.fillStyle = lit > 0.25 ? "#ffffff" : d.c;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, Math.max(0.4, d.r), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // The companion: every member dot to its cell in the shape.
+      dctx.fillStyle = "#ffffff";
+      members.forEach((i, n) => {
+        const d = parts[i]!;
+        const g = goals[n]!;
+        if (reduced) {
+          d.x = g.x;
+          d.y = g.y;
+          d.a = g.a;
+          d.r = g.r;
+        } else if (g.tight && Math.hypot(g.x - d.x, g.y - d.y) < 24) {
+          // Close enough: lock onto the line so it stays straight as it sweeps.
+          d.x += (g.x - d.x) * Math.min(1, 0.5 * dt);
+          d.y = g.y;
+          d.vx = d.vy = 0;
+          d.a += (g.a - d.a) * 0.12 * dt;
+          d.r += (g.r - d.r) * 0.2 * dt;
+        } else {
+          d.vx = (d.vx + (g.x - d.x) * d.k * dt) * Math.pow(0.74, dt);
+          d.vy = (d.vy + (g.y - d.y) * d.k * dt) * Math.pow(0.74, dt);
           d.x += d.vx * dt;
           d.y += d.vy * dt;
-          d.a += (ga - d.a) * 0.12 * dt;
-          d.r += (gr - d.r) * 0.2 * dt;
+          d.a += (g.a - d.a) * 0.12 * dt;
+          d.r += (g.r - d.r) * 0.2 * dt;
         }
-        if (d.a < 0.02) continue;
-        dctx.globalAlpha = Math.min(1, d.a);
+        dctx.globalAlpha = Math.min(1, Math.max(0, d.a));
         dctx.beginPath();
         dctx.arc(d.x, d.y, Math.max(0.5, d.r), 0, Math.PI * 2);
         dctx.fill();
-      }
+      });
       dctx.globalAlpha = 1;
 
       raf = requestAnimationFrame(frame);
