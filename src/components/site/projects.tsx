@@ -12,7 +12,7 @@ export function Projects({ projects = PROJECTS }: { projects?: Project[] }) {
         <h2 id="fs-projects" data-in>
           More projects
         </h2>
-        <p data-in>Each one runs in the browser. Drag the row or scroll it.</p>
+        <p data-in>Each one with its code and a live demo.</p>
         <BotDock className="side-bot features-bot" />
       </div>
       <DragStrip label="Projects">
