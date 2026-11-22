@@ -43,7 +43,6 @@ export const WORK: Job[] = [
       "Specified and built a demand and inventory planning SaaS for a direct-sales company: weekly planning grids, its own commercial calendar, warehouse and pallet rules.",
       "Building forecasting and warehouse dashboards for a second client, with automatic stock balancing between warehouses.",
       "Rebuilt the company's flagship mobile app from Flutter to Expo and shipped it on the App Store, Google Play and Huawei AppGallery.",
-      "Run a webinar series for Italian companies on modernising their software, with two colleagues.",
     ],
   },
   {
