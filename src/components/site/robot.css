@@ -203,3 +203,13 @@
     display: none;
   }
 }
+@keyframes zb-type {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-1.6px) scale(1.15);
+  }
+}

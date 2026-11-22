@@ -208,48 +208,8 @@ body:has(.zb) {
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  font: 600 22px/1 var(--display);
-  letter-spacing: -0.04em;
-}
-.zb .wordmark .mark {
-  width: 34px;
-  height: 34px;
-  color: var(--mint);
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.28));
-  animation: zb-hop 4.8s var(--ease) infinite;
-  transform-origin: 30% 90%;
-}
-@keyframes zb-type {
-  0%,
-  60%,
-  100% {
-    transform: none;
-  }
-  30% {
-    transform: translateY(-1.6px) scale(1.15);
-  }
-}
-@keyframes zb-hop {
-  0%,
-  82%,
-  100% {
-    transform: none;
-  }
-  87% {
-    transform: translateY(-5px) rotate(-8deg);
-  }
-  92% {
-    transform: translateY(0) rotate(2deg) scaleY(0.94);
-  }
-}
-.zb .mark .letter {
-  stroke: var(--bg);
-}
-.zb .wordmark small {
-  font: 500 13px/1 var(--body);
-  letter-spacing: 0;
-  color: var(--dim);
-  margin-left: 2px;
+  font: 700 21px/1 var(--display);
+  letter-spacing: -0.03em;
 }
 .zb .nav ul {
   display: flex;
@@ -1011,10 +971,7 @@ body:has(.zb) {
     transform: none;
     transition: none;
   }
-  .zb .wordmark .mark {
-    animation: none;
-  }
-  .zb .btn:hover,
+    .zb .btn:hover,
   .zb .card:hover {
     transform: none;
   }
@@ -1071,10 +1028,7 @@ body:has(.zb) {
   .zb .nav .btn {
     padding: 0 14px;
   }
-  .zb .wordmark small {
-    display: none;
-  }
-  .zb .nav .btn {
+    .zb .nav .btn {
     min-height: 44px;
     padding: 0 16px;
     font-size: 15px;

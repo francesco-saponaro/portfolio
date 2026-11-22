@@ -2,7 +2,6 @@ import Link from "next/link";
 import "./site.css";
 import "./robot.css";
 import { archivo, instrument } from "./fonts";
-import { FsMark } from "./mark";
 import { Motion } from "./client";
 import { FlyerStage } from "./flyer-stage";
 import { BotDock } from "./robot";
@@ -37,9 +36,7 @@ export function Nav() {
     <header className="wrap" id="top">
       <nav className="nav" aria-label="Main">
         <Link href="/" className="wordmark" aria-label={`${PERSON.name}, home`}>
-          <FsMark />
           <span>{PERSON.name}</span>
-          <small>{PERSON.city}</small>
         </Link>
         <ul>
           {NAV_LINKS.map((l) => (
