@@ -3,8 +3,8 @@
 
 export const RETEST = {
   title: "Retest",
-  lead: "A vulnerability-assessment workbench. Scanner output goes in, one list of findings comes out, and each finding is walked to a report.",
-  body: "Scanners like Nmap, ZAP or Trivy each write their own format, repeat each other and raise false alarms. Retest reads six of them, merges what they agree on, recomputes every score with the official CVSS formula, and walks each finding through the six phases of an assessment. Nothing counts as verified until a person adds evidence of their own.",
+  lead: "A workbench for security assessments. It turns the output of six scanners into one list of findings, and follows each one from the first scan to a verified fix.",
+  body: "Scanners like Nmap, ZAP or Trivy each write their own format, repeat one another and raise false alarms. Retest reads all six, merges what they agree on, recomputes every score with the official CVSS formula, and moves each finding through the six phases of an assessment. A finding only counts as verified when a person adds evidence of their own: the scanner suggests, the person verifies.",
   live: "https://retest-francesco-saponaro.netlify.app",
   repo: "https://github.com/francesco-saponaro/retest",
   realRun: "https://github.com/francesco-saponaro/retest/tree/main/lab/real-run",

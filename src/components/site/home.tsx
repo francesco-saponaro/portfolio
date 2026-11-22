@@ -71,6 +71,13 @@ export function Home() {
                   <h3>{j.org}</h3>
                   <p className="step-role">{j.role}</p>
                   <p>{j.text}</p>
+                  {j.points ? (
+                    <ul className="step-points">
+                      {j.points.map((pt) => (
+                        <li key={pt}>{pt}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -83,7 +90,7 @@ export function Home() {
             <h2 id="fs-how" data-in>
               How I work
             </h2>
-            <p data-in>Three habits.</p>
+            <p data-in>On every project.</p>
             <BotDock className="side-bot features-bot" point="left" />
           </div>
           <div className="wrap how-grid">
@@ -105,7 +112,7 @@ export function Home() {
             <h2 id="fs-about" data-in>
               Based in Paris.
             </h2>
-            <p data-in>I work in English and Italian, get by in Portuguese, and I&apos;m learning French. Happy in an office here or on a remote team.</p>
+            <p data-in>I work in English every day, Italian is my first language, I get by in Portuguese and I&apos;m learning French. I live in Paris and work from here, in an office or with a remote team.</p>
             <ul className="about-facts" data-in>
               {FACTS.map((f) => (
                 <li key={f.label}>
@@ -123,7 +130,7 @@ export function Home() {
               Say hello.
             </h2>
             <p className="cta-lead" data-in>
-              Email is the quickest way to reach me. For the rest, LinkedIn and GitHub.
+              A project, a question, or something to build together: email is the quickest way to reach me. LinkedIn and GitHub are here too.
             </p>
             <a className="mail" href={`mailto:${PERSON.email}`} data-in>
               {PERSON.email.split("@")[0]}
