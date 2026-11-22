@@ -11,7 +11,7 @@ import { RobotSvg } from "./robot";
 // a roll when clicked. With no dock on screen it waits in the bottom-right
 // corner like a chat button (a click there goes to the contact section).
 
-const DUST = ["#2fe0c4", "#ff7a45", "#7fb4ff", "#ffe071", "#a99bff"];
+const DUST = ["#2fe0c4", "#2fe0c4", "#eceFea", "#8e9893"];
 const BASE_W = 400;
 const BASE_H = 460;
 

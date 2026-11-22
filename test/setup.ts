@@ -3,8 +3,10 @@ import { vi } from "vitest";
 
 // next/font needs the Next compiler; the tests only need the class names.
 vi.mock("next/font/google", () => ({
-  Unbounded: () => ({ variable: "font-unbounded", className: "font-unbounded" }),
   Instrument_Sans: () => ({ variable: "font-instrument", className: "font-instrument" }),
+}));
+vi.mock("next/font/local", () => ({
+  default: () => ({ variable: "font-archivo", className: "font-archivo" }),
 }));
 
 // jsdom has no canvas, media queries or intersection observer; the robot and

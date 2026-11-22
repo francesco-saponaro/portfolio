@@ -1,6 +1,6 @@
 import { DragStrip } from "./client";
 import { BotDock } from "./robot";
-import { PERSON, TONES } from "@/data/site";
+import { PERSON } from "@/data/site";
 import { PROJECTS, type Project } from "@/data/projects";
 
 // The projects strip: one draggable card each, the running app's screenshot on
@@ -27,8 +27,8 @@ export function Projects({ projects = PROJECTS }: { projects?: Project[] }) {
             </p>
           </article>
         ) : (
-          projects.map((p, i) => (
-            <article key={p.slug} className={`card project t-${TONES[i % TONES.length]}`}>
+          projects.map((p) => (
+            <article key={p.slug} className="card project">
               {p.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img className="project-shot" src={p.image.src} alt={p.image.alt} width={960} height={600} loading="lazy" decoding="async" draggable={false} />

@@ -88,7 +88,7 @@ export function Home() {
           </div>
           <div className="wrap how-grid">
             {HOW.map((h, i) => (
-              <article key={h.title} className={`card t-${h.tone}`} data-in style={{ ["--i" as string]: i }}>
+              <article key={h.title} className="card" data-in style={{ ["--i" as string]: i }}>
                 <h3>{h.title}</h3>
                 <p>{h.text}</p>
               </article>

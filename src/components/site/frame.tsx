@@ -1,7 +1,7 @@
 import Link from "next/link";
 import "./site.css";
 import "./robot.css";
-import { instrument, unbounded } from "./fonts";
+import { archivo, instrument } from "./fonts";
 import { FsMark } from "./mark";
 import { Motion } from "./client";
 import { RobotStage } from "./robot-stage";
@@ -12,7 +12,7 @@ import { PERSON } from "@/data/site";
 // link, the footer and the entrance observer.
 export function SiteFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`zb ${unbounded.variable} ${instrument.variable}`}>
+    <div className={`zb ${archivo.variable} ${instrument.variable}`}>
       <RobotStage />
       <a href="#content" className="sr-only">
         Skip to content
