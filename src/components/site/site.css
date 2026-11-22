@@ -1,23 +1,23 @@
-/* The site's stylesheet. A blue-black ground, off-white ink and one
-   accent, mint, for actions and the few things that matter; Archivo, set
-   wide, for display, Instrument Sans for reading. A canvas behind the page draws the dust and the robot
+/* The site's stylesheet. Monochrome: a near-black ground, surfaces a step
+   lighter, off-white ink and greys, white for the actions. Archivo, heavy,
+   wide and in capitals, for display; Instrument Sans for reading. A canvas behind the page draws the dust and the robot
    flies over it (robot-stage.tsx). Everything is scoped under .zb. */
 
 .zb {
-  --bg: #070b10;
-  --bg-2: #0e151c;
-  --bg-3: #141d26;
-  --glass: #0e151c;
-  --glass-hi: #141d26;
-  --line: rgba(236, 239, 234, 0.1);
-  --ink: #eceFea;
-  --muted: #b3bcb7;
-  --dim: #8e9893;
-  --mint: #2fe0c4;
-  --mint-hi: #8ff7de;
-  --mint-deep: #0e9f7e;
-  --on-mint: #03140f;
-  --glyph-fallback: #2fe0c4;
+  --bg: #0a0a0a;
+  --bg-2: #141414;
+  --bg-3: #1d1d1d;
+  --glass: #141414;
+  --glass-hi: #1d1d1d;
+  --line: rgba(255, 255, 255, 0.1);
+  --ink: #f2f2f0;
+  --muted: #a6a6a3;
+  --dim: #6e6e6c;
+  --mint: #f2f2f0;
+  --mint-hi: #ffffff;
+  --mint-deep: #a6a6a3;
+  --on-mint: #0a0a0a;
+  --glyph-fallback: #f2f2f0;
 
   --display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --body: var(--font-instrument), "Helvetica Neue", Arial, sans-serif;
@@ -47,7 +47,7 @@
   overflow-x: clip;
 }
 body:has(.zb) {
-  background: #070b10;
+  background: #0a0a0a;
 }
 .zb > *:not(.stage) {
   position: relative;
@@ -82,15 +82,23 @@ body:has(.zb) {
 .zb h2,
 .zb h3 {
   font-family: var(--display);
-  font-weight: 700;
-  font-stretch: 118%;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
   margin: 0;
   text-wrap: balance;
 }
+.zb h1,
+.zb h2 {
+  text-transform: uppercase;
+}
 .zb h2 {
   font-size: var(--t-l);
+}
+.zb h3 {
+  font-weight: 700;
+  font-stretch: 105%;
 }
 .zb p {
   margin: 0;
@@ -159,7 +167,7 @@ body:has(.zb) {
   color: var(--ink);
 }
 .zb .btn.ghost:hover {
-  background: #1d2833;
+  background: #2a2a2a;
 }
 .zb .link {
   color: var(--mint-hi);
@@ -196,7 +204,7 @@ body:has(.zb) {
   width: 34px;
   height: 34px;
   color: var(--mint);
-  filter: drop-shadow(0 0 12px rgba(47, 224, 196, 0.45));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.28));
   animation: zb-hop 4.8s var(--ease) infinite;
   transform-origin: 30% 90%;
 }
@@ -254,7 +262,7 @@ body:has(.zb) {
 }
 .zb .nav ul a:hover {
   color: var(--ink);
-  background: rgba(234, 246, 242, 0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 .zb .nav .btn {
   min-height: 46px;
@@ -283,7 +291,7 @@ body:has(.zb) {
   display: inline-block;
 }
 .zb .hero h1 .soft > span {
-  color: var(--mint);
+  color: var(--dim);
 }
 .zb .hero-lead {
   margin-top: 30px;
@@ -574,7 +582,7 @@ body:has(.zb) {
 .zb .card-stack li {
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(236, 239, 234, 0.07);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--muted);
   font-size: 13px;
 }
@@ -757,7 +765,7 @@ body:has(.zb) {
   padding: 0 18px;
   border: 0;
   border-radius: 999px;
-  background: rgba(160, 230, 215, 0.08);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--ink);
   font: 500 16px/1 var(--body);
   cursor: pointer;
@@ -767,7 +775,7 @@ body:has(.zb) {
     transform 0.25s var(--ease);
 }
 .zb .screens-tab:hover {
-  background: rgba(160, 230, 215, 0.16);
+  background: rgba(255, 255, 255, 0.14);
 }
 .zb .screens-tab:active {
   transform: scale(0.97);
@@ -905,7 +913,7 @@ body:has(.zb) {
 .zb .retest-stack li {
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(160, 230, 215, 0.08);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--ink);
   font-size: 15px;
 }
@@ -926,10 +934,17 @@ body:has(.zb) {
   object-position: top left;
   background: var(--bg-2);
   pointer-events: none;
-  transition: transform 0.6s var(--ease-out);
+  transition:
+    transform 0.6s var(--ease-out),
+    filter 0.6s var(--ease-out);
 }
-.zb .card.project:hover .project-shot {
+.zb .project-shot {
+  filter: grayscale(1) contrast(1.05);
+}
+.zb .card.project:hover .project-shot,
+.zb .card.project:focus-within .project-shot {
   transform: scale(1.03);
+  filter: none;
 }
 .zb .project-body {
   display: flex;

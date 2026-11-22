@@ -5,7 +5,7 @@ import { shapeMarkup, type ShapeName } from "./shapes";
 
 // The section icons as solid glossy shapes that melt into one another. Each
 // shape is the same SVG as the particle version, cut with a mask and filled
-// with a mint gradient; a goo filter (blur + alpha threshold) blends the old
+// with a silver gradient; a goo filter (blur + alpha threshold) blends the old
 // and the new shape while they cross-fade, so a change looks liquid, and a
 // specular light that follows the pointer gives the sheen. A shape morphs
 // when its data-shape changes (the pinned stories set it) and grows out of a
@@ -22,7 +22,7 @@ function layer(uid: string, k: number, name: string) {
 }
 
 function svgMarkup(uid: string, name: string) {
-  return `<defs><linearGradient id="${uid}g" gradientUnits="userSpaceOnUse" x1="14" y1="6" x2="86" y2="98"><stop offset="0" stop-color="#c8fff2"/><stop offset="0.3" stop-color="#5ff0d4"/><stop offset="0.64" stop-color="#1fc6aa"/><stop offset="1" stop-color="#0a6656"/></linearGradient><filter id="${uid}f" filterUnits="userSpaceOnUse" x="-20" y="-20" width="140" height="140" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="${BLUR}" result="b"/><feColorMatrix in="b" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 22 -9" result="goo"/><feGaussianBlur in="goo" stdDeviation="2.6" result="bump"/><feSpecularLighting in="bump" surfaceScale="5" specularConstant="0.95" specularExponent="24" lighting-color="#ffffff" result="spec"><fePointLight x="24" y="6" z="72"/></feSpecularLighting><feComposite in="spec" in2="goo" operator="in" result="lit"/><feComposite in="goo" in2="lit" operator="arithmetic" k1="0" k2="1" k3="0.8" k4="0"/></filter></defs><g class="sl-wrap" filter="url(#${uid}f)">${layer(uid, 0, name)}</g>`;
+  return `<defs><linearGradient id="${uid}g" gradientUnits="userSpaceOnUse" x1="14" y1="6" x2="86" y2="98"><stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="#c9c9c6"/><stop offset="0.66" stop-color="#6a6a68"/><stop offset="1" stop-color="#232323"/></linearGradient><filter id="${uid}f" filterUnits="userSpaceOnUse" x="-20" y="-20" width="140" height="140" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="${BLUR}" result="b"/><feColorMatrix in="b" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 22 -9" result="goo"/><feGaussianBlur in="goo" stdDeviation="2.6" result="bump"/><feSpecularLighting in="bump" surfaceScale="5" specularConstant="0.95" specularExponent="24" lighting-color="#ffffff" result="spec"><fePointLight x="24" y="6" z="72"/></feSpecularLighting><feComposite in="spec" in2="goo" operator="in" result="lit"/><feComposite in="goo" in2="lit" operator="arithmetic" k1="0" k2="1" k3="0.8" k4="0"/></filter></defs><g class="sl-wrap" filter="url(#${uid}f)">${layer(uid, 0, name)}</g>`;
 }
 
 // One pointer listener for every solid shape on screen: it tilts them and

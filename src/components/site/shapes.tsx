@@ -1,6 +1,6 @@
 // The shapes the solid icons take, one per section. Drawn on a 100×100
 // grid: FG is the solid part, HOLE is cut out. solid.tsx cuts a mask from
-// this markup and fills it with the mint gradient.
+// this markup and fills it with the silver gradient.
 
 const FG = "__fg__";
 const HOLE = "__hole__";
