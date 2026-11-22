@@ -18,6 +18,7 @@ const RAW: Record<string, string> = {
   gear: `<path fill="${FG}" d="M43 6h14l3 12 9 4 11-7 10 10-7 11 4 9 12 3v14l-12 3-4 9 7 11-10 10-11-7-9 4-3 12H43l-3-12-9-4-11 7-10-10 7-11-4-9-12-3V43l12-3 4-9-7-11 10-10 11 7 9-4Z"/><circle cx="50" cy="50" r="15" fill="${HOLE}"/>`,
   phone: `<rect x="24" y="4" width="52" height="92" rx="13" fill="${FG}"/><rect x="31" y="15" width="38" height="64" rx="4" fill="${HOLE}"/><path d="M35 30h22M43 42h22M35 54h18" stroke="${FG}" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="87" r="3.5" fill="${HOLE}"/>`,
   sun: `<circle cx="50" cy="50" r="20" fill="${FG}"/><path d="M50 6v12M50 82v12M6 50h12M82 50h12M19 19l8 8M73 73l8 8M81 19l-8 8M27 73l-8 8" stroke="${FG}" stroke-width="8" stroke-linecap="round"/>`,
+  house: `<path d="M50 9 91 44H80v44H20V44H9Z" fill="${FG}" stroke="${FG}" stroke-width="6" stroke-linejoin="round"/><rect x="66" y="14" width="11" height="22" rx="2" fill="${FG}"/><rect x="42" y="62" width="16" height="26" rx="3" fill="${HOLE}"/><path d="M30 54 40 46 50 50 64 38" fill="none" stroke="${HOLE}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
   pin: `<path d="M50 96C33 74 18 58 18 38a32 32 0 0 1 64 0c0 20-15 36-32 58Z" fill="${FG}"/><circle cx="50" cy="38" r="12" fill="${HOLE}"/>`,
   plane: `<path d="M6 46 94 8 70 92 50 62Z" fill="${FG}"/><path d="M50 62 94 8" stroke="${HOLE}" stroke-width="5" stroke-linecap="round"/><path d="M50 62 46 88 58 74Z" fill="${FG}"/>`,
 };
